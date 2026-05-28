@@ -1,0 +1,36 @@
+# EGOS-PUBLIC .gitignore — aggressive (whitelist approach)
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+dist/
+build/
+.next/
+
+# Security — NEVER commit
+*.pem
+*.key
+*.p12
+*.pfx
+*_rsa
+*_ed25519
+
+# Personal data
+data/personal-os/
+docs/personal-os/
+**/private/
+**/enio_profile*
+**/interview_state*
+
+# EGOS kernel internals
+notebooklm_export_egos.md
+.env.backup-*
+central-egos/
+clients/
+
+# Bun
+bun.lockb
+.bun-cache/

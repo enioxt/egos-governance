@@ -1,0 +1,16 @@
+{
+  "name": "@egos-public/mcp-eval-runner",
+  "version": "0.1.0-alpha.1",
+  "description": "MCP server for behavioral evaluation of AI agents — golden cases, capability gates, eval harness",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist",
+    "test": "bun test"
+  },
+  "keywords": ["mcp", "eval", "ai-agents", "governance", "behavioral-testing"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

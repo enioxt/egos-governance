@@ -1,0 +1,22 @@
+{
+  "name": "@egos-public/governance",
+  "version": "0.1.0",
+  "description": "Governance OS for Agentic Software Delivery",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "starter"
+  ],
+  "scripts": {
+    "extract:dry": "bun scripts/extract-public.ts --dry-run",
+    "extract:exec": "bun scripts/extract-public.ts --exec",
+    "scan": "bun scripts/extract-public.ts --scan",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "precommit": "bash starter/.husky/pre-commit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

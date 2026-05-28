@@ -1,0 +1,53 @@
+# .gitleaks.toml — EGOS-PUBLIC custom rules
+title = "EGOS Public — Secret Detection Rules"
+
+[[rules]]
+id = "egos-jwt-supabase"
+description = "Supabase JWT token"
+regex = '''eyJhbGc[A-Za-z0-9._-]{50,}'''
+tags = ["jwt", "supabase"]
+
+[[rules]]
+id = "egos-client-names"
+description = "Client-specific names that must not appear in public repo"
+regex = '''(?i)(gpecas|apecaspatense|g\speak\s|apeças\spatense)'''
+tags = ["client-data", "pii"]
+
+[[rules]]
+id = "egos-personal-names"
+description = "Personal names of real clients"
+regex = '''(?i)\bjulio\b|\bjúlio\b|\bbernardo\b'''
+tags = ["pii", "client-data"]
+
+[[rules]]
+id = "egos-institutional"
+description = "Institutional identifiers (police/government)"
+regex = '''(?i)\bpcmg\b|\bdhpp\b|\bpolicía\s+civil\b'''
+tags = ["institutional", "sensitive"]
+
+[[rules]]
+id = "egos-phone-br"
+description = "Brazilian phone numbers with country code"
+regex = '''\b5534\d{8,9}\b'''
+tags = ["pii", "phone"]
+
+[[rules]]
+id = "egos-vps-ips"
+description = "VPS IP addresses (Hetzner/Contabo)"
+regex = '''204\.168\.217\.\d+|217\.216\.95\.\d+'''
+tags = ["infrastructure", "ip"]
+
+[[rules]]
+id = "egos-internal-domains"
+description = "Internal production domains"
+regex = '''egos\.ia\.br|intelink\.ia\.br|gpecas\.egos\.ia\.br|guard\.egos\.ia\.br'''
+tags = ["infrastructure", "domain"]
+
+[allowlist]
+description = "Files that may contain these patterns for legitimate reasons"
+paths = [
+  ".gitleaks.toml",
+  "scripts/extract-public.ts",
+  "EXTRACT_MANIFEST.yaml",
+  "docs/incidents/*.md"
+]

@@ -1,0 +1,16 @@
+{
+  "name": "@egos-public/mcp-skills-registry",
+  "version": "0.1.0-alpha.1",
+  "description": "MCP server for discovering and serving agent skills, slash commands, and DPIO personas",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist",
+    "test": "bun test"
+  },
+  "keywords": ["mcp", "skills", "ai-agents", "claude-code", "slash-commands"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@egos-public/mcp-governance",
+  "version": "0.1.0-alpha.1",
+  "description": "MCP server exposing governance rules, SSOT drift detection, and policy enforcement as tools",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist",
+    "test": "bun test"
+  },
+  "keywords": ["mcp", "governance", "ai-agents", "ssot", "policy"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
