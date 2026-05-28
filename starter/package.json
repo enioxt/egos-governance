@@ -1,0 +1,21 @@
+{
+  "name": "@egos-public/starter",
+  "version": "0.1.0",
+  "description": "EGOS Governance Starter — pre-commit pipeline + slash commands + agent skills",
+  "type": "module",
+  "scripts": {
+    "prepare": "husky install",
+    "precommit": "bash .husky/pre-commit",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "smoke": "bun scripts/runtime-smoke.ts"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
