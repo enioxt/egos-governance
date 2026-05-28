@@ -1,0 +1,713 @@
+#!/bin/sh
+# EGOS Pre-Commit Hook — Maximum Enforcement
+# FROZEN ZONE: Do not weaken without explicit approval + proof-of-work.
+# Cross-platform hardening: 2026-05-11 — jq fallback + path lint + junk-file guard.
+# Pairs with docs/governance/CROSS_PLATFORM_RULES.md.
+
+set -eu
+
+# Cross-platform JSON reader. jq is the preferred tool but isn't on every
+# platform (e.g. git-bash Windows). Falls back to python3, then "null".
+# See CROSS_PLATFORM_RULES.md §3. Past misfire: missing jq → GATES=false →
+# git rebase swallowed the real error and reported "must edit merge conflicts".
+json_get() {
+  # stdin = json string, $1 = jq-style key path like .validation.gates_pass
+  _jg_key="${1:-.}"
+  if command -v jq > /dev/null 2>&1; then
+    jq -r "$_jg_key" 2>/dev/null
+  elif command -v python3 > /dev/null 2>&1; then
+    python3 -c "
+import sys, json
+key = sys.argv[1].lstrip('.').split('.')
+try:
+    d = json.load(sys.stdin)
+    for k in key: d = d[k]
+    print(d if d is not None else 'null')
+except Exception:
+    print('null')
+" "$_jg_key" 2>/dev/null
+  else
+    echo "null"
+  fi
+}
+
+echo "🔒 EGOS Pre-Commit: Maximum enforcement active"
+
+# Portability gate (CROSS_PLATFORM_RULES.md §1) — block staged files that
+# introduce hardcoded user-specific absolute paths. Allows comments but not
+# value-side usage. Exempts the rules doc itself and archived handoffs.
+STAGED_TEXT=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null | \
+  grep -vE '\.(png|jpg|jpeg|gif|webp|pdf|zip|tar|gz|lock|ico)$|^docs/_archived_handoffs/|^docs/governance/CROSS_PLATFORM_RULES\.md$' || true)
+if [ -n "$STAGED_TEXT" ]; then
+  HARDCODED=""
+  for f in $STAGED_TEXT; do
+    [ -f "$f" ] || continue
+    if git diff --cached -- "$f" 2>/dev/null | grep -E '^\+' | grep -v '^\+\+\+' | \
+       grep -qE '["'"'"'`=]\s*$(git rev-parse --show-toplevel)|["'"'"'`=]\s*C:\\\\Users\\\\Usuario\\\\.egos'; then
+      HARDCODED="$HARDCODED $f"
+    fi
+  done
+  if [ -n "$HARDCODED" ]; then
+    echo "❌ BLOCKED: hardcoded absolute path detected in staged file(s):"
+    for f in $HARDCODED; do echo "    $f"; done
+    echo "    Use \$EGOS_ROOT / git rev-parse instead. See docs/governance/CROSS_PLATFORM_RULES.md §1."
+    exit 1
+  fi
+fi
+
+# Janitorial gate (CROSS_PLATFORM_RULES.md §2) — block Windows shell-redirect
+# artifacts. PowerShell '2>null' (vs '2>$null') creates a file literally named
+# 'null' at repo root.
+for junk in null nul NUL; do
+  if [ -f "$junk" ]; then
+    echo "❌ BLOCKED: file '$junk' in repo root — likely PowerShell redirect typo (use 2>\$null or 2>/dev/null)."
+    echo "    Remove: rm '$junk'"
+    exit 1
+  fi
+done
+
+# 0. FOCUS ENFORCEMENT — 90-day strategic commitment (April 3 - June 30, 2026)
+echo "  [0/8] focus enforcement: checking 90-day commitment..."
+bash .husky/focus-enforcement || exit 1
+
+# 0.5. SESSION COUNTER — track commits, emit [CHECKPOINT-NEEDED] if thresholds exceeded
+# Skip if commit message contains [CHECKPOINT] to avoid loop
+COMMIT_MSG_FILE="${GIT_DIR:-.git}/COMMIT_EDITMSG"
+if [ -f "$COMMIT_MSG_FILE" ] && grep -q "\[CHECKPOINT\]" "$COMMIT_MSG_FILE" 2>/dev/null; then
+  echo "  [0.5/8] session counter: [CHECKPOINT] commit — skip threshold check"
+else
+  if command -v bun > /dev/null 2>&1 && [ -f "scripts/session-init.ts" ]; then
+    bun scripts/session-init.ts --commit 2>/dev/null || true
+    bun scripts/session-init.ts --check 2>/dev/null || {
+      echo ""
+      echo "⚠️  [CHECKPOINT-NEEDED] Session thresholds exceeded."
+      echo "   Run /checkpoint to spawn a fresh session before continuing."
+      echo "   (Non-blocking — commit proceeds. Address before next session.)"
+    }
+  fi
+fi
+
+# 0.6. HERMES REVIEW GATE — sync queue from VPS then block if CRITICAL
+# sync-review-queue.sh runs silently (<5s hard timeout) — fails gracefully if VPS offline
+# INC-FIX-2026-05-20: wrapped in `timeout 5` — SSH rsync was hanging indefinitely
+if [ -f "scripts/sync-review-queue.sh" ]; then
+  timeout 5 bash scripts/sync-review-queue.sh 2>/dev/null || true
+fi
+if [ -f "$HOME/.egos/review-queue.jsonl" ]; then
+  # Use count exported by sync-review-queue.sh (recent CRITICALs only, stale ones are warnings)
+  CRITICAL_COUNT_FILE="$HOME/.egos/review-queue.jsonl.critical-count"
+  if [ -f "$CRITICAL_COUNT_FILE" ]; then
+    CRITICAL_COUNT=$(cat "$CRITICAL_COUNT_FILE" 2>/dev/null || echo 0)
+  else
+    # Fallback: raw count (legacy behavior)
+    CRITICAL_COUNT=$(grep -c '"severity":"CRITICAL"' "$HOME/.egos/review-queue.jsonl" 2>/dev/null || echo 0)
+  fi
+  if [ "$CRITICAL_COUNT" -gt 0 ]; then
+    echo ""
+    echo "❌ BLOCKED: $CRITICAL_COUNT recent (≤7d) unresolved CRITICAL finding(s) in Hermes review queue."
+    echo "   Run: cat ~/.egos/review-queue.jsonl | grep CRITICAL to see details."
+    echo "   To mark resolved: bash scripts/resolve-review.sh <commit-sha>"
+    exit 1
+  fi
+fi
+
+# 0.7. VISUAL PROOF GATE — Karpathy Doctrine (INC-2026-05-08)
+# Dispara quando staged diff toca UI surface (apps/*-landing/, components/, *.jsx, *.tsx, *.html)
+# Modo warn-only por padrão. EGOS_VISUAL_PROOF_STRICT=1 → bloqueia.
+# SSOT: docs/personal-os/FOCUS_GATES.md §4
+if [ -f "scripts/check-visual-proof.sh" ]; then
+  bash scripts/check-visual-proof.sh "${GIT_DIR:-.git}/COMMIT_EDITMSG" || exit 1
+fi
+
+# 0.75. BANNED WORDS GATE — A53 Karpathy Doctrine (100%, perfeito, garantido, infalível)
+# Dispara em staged copy pública (*.md *.html *.jsx *.tsx)
+# Modo warn-only por padrão. EGOS_BANNED_STRICT=1 → bloqueia.
+# SSOT: ~/.claude/CLAUDE.md §1 "Banned absolutes" + docs/personal-os/FOCUS_GATES.md
+if [ -f "scripts/check-banned-words.sh" ]; then
+  bash scripts/check-banned-words.sh || exit 1
+fi
+
+# 0.78. CAP-MODULAR GATE — K5 (packages/integrations/ sem entry em CAPABILITY_REGISTRY)
+# SSOT: .guarani/orchestration/GATES.md K5
+if [ -f "scripts/check-cap-modular.sh" ]; then
+  bash scripts/check-cap-modular.sh || exit 1
+fi
+
+# 0.8. PROJECT INCEPTION GATE (PIG) — A59 (INC-2026-05-08-INSIGHT)
+# Dispara em PRIMEIRO commit em repo NOVO fora dos canonical
+# Modo warn-only por padrão. EGOS_INCEPTION_STRICT=1 → bloqueia.
+# SSOT: docs/personal-os/FOCUS_GATES.md §6 + .claude/commands/inception.md
+if [ -f "scripts/check-inception.sh" ]; then
+  bash scripts/check-inception.sh "${GIT_DIR:-.git}/COMMIT_EDITMSG" || exit 1
+fi
+
+# 1. Gitleaks — Secret scanning
+if command -v gitleaks > /dev/null 2>&1; then
+  echo "  [1/5] gitleaks: scanning for secrets..."
+  gitleaks protect --staged --no-banner || {
+    echo "❌ BLOCKED: Secrets detected. Remove them before committing."
+    exit 1
+  }
+else
+  echo "  [1/5] gitleaks: NOT INSTALLED (install: brew install gitleaks)"
+fi
+
+# 1.5. audit-secrets — INC-007 prevention (EGOS-specific patterns + fallback anti-pattern)
+echo "  [1.5/5] audit-secrets: scanning staged files for EGOS-specific secrets..."
+if command -v bun > /dev/null 2>&1 && [ -f "scripts/security/audit-secrets.ts" ]; then
+  if ! bun scripts/security/audit-secrets.ts --staged > /tmp/audit-secrets.out 2>&1; then
+    tail -20 /tmp/audit-secrets.out
+    echo "❌ BLOCKED: audit-secrets found critical/high findings in staged files."
+    echo "   Fix issues or remove the secret before committing."
+    exit 1
+  fi
+  tail -3 /tmp/audit-secrets.out
+else
+  echo "  [1.5/5] audit-secrets: script not found (skipping)"
+fi
+
+# 1.6. AI Security check — inline LLM scan of staged diff (AI-SECURITY-001)
+# Uses qwen-turbo (<500ms), fail-open on LLM timeout. Warn-only by default.
+# Set AI_SECURITY_STRICT=1 to block on CRITICAL findings.
+# Skip if diff is docs-only (no TS/JS/SQL risk).
+echo "  [1.6/5] ai-security: scanning staged diff for security issues..."
+if command -v bun > /dev/null 2>&1 && [ -f "scripts/ai-commit-security.ts" ]; then
+  bun scripts/ai-commit-security.ts --staged 2>/dev/null || true
+else
+  echo "  [1.6/5] ai-security: bun not found or script missing — skipped"
+fi
+
+# 2. Session health check — /start v6.0 validation gates
+echo "  [2/5] start-v6.0: running system health checks..."
+HEALTH=$(bun scripts/start-v6.ts --json 2>/dev/null)
+GATES=$(printf '%s' "$HEALTH" | json_get '.validation.gates_pass')
+if [ "$GATES" != "true" ]; then
+  echo "❌ BLOCKED: System health gates failed."
+  if command -v jq > /dev/null 2>&1; then
+    echo "$HEALTH" | jq '.blockers, .recommendations[:2]' 2>/dev/null
+  else
+    echo "    (jq not installed — install via 'winget install jqlang.jq' on Windows, 'apt install jq' on Linux)"
+    echo "    Run for details: bun scripts/start-v6.ts --full"
+  fi
+  exit 1
+fi
+
+# 2.5. TypeScript — Strict type check
+echo "  [2.5/5] tsc: running strict type check..."
+npx tsc --noEmit 2>/dev/null || bun run typecheck 2>/dev/null || {
+  echo "❌ BLOCKED: TypeScript errors found. Fix before committing."
+  exit 1
+}
+
+# 3. Frozen Zones — Check for unauthorized changes
+STAGED=$(git diff --cached --name-only 2>/dev/null || true)
+FROZEN_VIOLATED=0
+
+for frozen in \
+  "agents/runtime/runner.ts" \
+  "agents/runtime/event-bus.ts" \
+  ".husky/pre-commit" \
+  ".guarani/orchestration/PIPELINE.md" \
+  ".guarani/orchestration/GATES.md"; do
+  if echo "$STAGED" | grep -q "^${frozen}$"; then
+    echo "  FROZEN ZONE: $frozen is staged for commit."
+    echo "   This file requires explicit user approval + proof-of-work."
+    FROZEN_VIOLATED=1
+  fi
+done
+
+if [ "$FROZEN_VIOLATED" -eq 1 ]; then
+  echo ""
+  echo "❌ BLOCKED: Frozen zone files modified."
+  echo "   To override: git commit --no-verify (requires proof-of-work in message)"
+  exit 1
+fi
+
+# 4.5. Modification Size Guard — Alert on excessive changes
+STAGED_DIFF_STAT=$(git diff --cached --stat --numstat 2>/dev/null || true)
+if [ -n "$STAGED_DIFF_STAT" ]; then
+  TOTAL_ADDS=$(echo "$STAGED_DIFF_STAT" | awk '{sum+=$1} END {print sum+0}')
+  TOTAL_DELS=$(echo "$STAGED_DIFF_STAT" | awk '{sum+=$2} END {print sum+0}')
+  TOTAL_LINES=$(( ${TOTAL_ADDS:-0} + ${TOTAL_DELS:-0} ))
+  TOTAL_FILES=$(echo "$STAGED_DIFF_STAT" | wc -l)
+  
+  # Alert if more than 500 lines changed
+  if [ "$TOTAL_LINES" -gt 500 ]; then
+    echo ""
+    echo "⚠️  WARNING: Large commit detected ($TOTAL_LINES lines changed across $TOTAL_FILES files)"
+    echo "   This makes reviews harder and increases rollback risk."
+    echo "   Consider: git reset HEAD and split into smaller commits."
+    echo ""
+    echo "   Files with most changes:"
+    echo "$STAGED_DIFF_STAT" | sort -k1 -k2 -n -r | head -5 | awk '{print "   - " $3 " (" $1 "+ / " $2 "-)"}'
+    echo ""
+    if [ -t 0 ]; then
+      read -p "Continue anyway? [y/N] " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+      fi
+    else
+      echo "   ⚠️  Non-interactive mode — allowing large commit (add smaller commits when possible)"
+    fi
+  fi
+fi
+
+# 4. Doc Proliferation — Block timestamped docs
+echo "  [4/5] doc proliferation: checking for timestamped docs..."
+bash scripts/check-doc-proliferation.sh || exit 1
+
+# 4.1 docs/ root guard — only 9 canonical files allowed
+DOCS_ROOT_ALLOWLIST="EGOS_BOOTSTRAP.md CAPABILITY_REGISTRY.md GTM_SSOT.md COORDINATION.md COORDINATION_PATTERN.md CROSS_REPO_CONTEXT_ROUTER.md SYSTEM_MAP.md AGENT_BOOTSTRAP.md SPRINT_PROTOCOL.md"
+NEW_DOCS_ROOT=$(echo "$STAGED" | grep -E '^docs/[^/]+\.md$' | sed 's|docs/||' || true)
+if [ -n "$NEW_DOCS_ROOT" ]; then
+  VIOLATIONS=""
+  for f in $NEW_DOCS_ROOT; do
+    if ! echo "$DOCS_ROOT_ALLOWLIST" | grep -qw "$f"; then
+      VIOLATIONS="$VIOLATIONS $f"
+    fi
+  done
+  if [ -n "$VIOLATIONS" ]; then
+    echo "❌ BLOCKED: New docs/*.md file(s) not in canonical allowlist:"
+    for v in $VIOLATIONS; do echo "   docs/$v"; done
+    echo "   Move to a subdirectory (docs/governance/, docs/strategy/, etc.)"
+    echo "   See: CLAUDE.md §7 'docs/ Root Rule' | Audit: bun scripts/docs-root-audit.ts"
+    exit 1
+  fi
+fi
+
+# 4. Governance propagation — canonical kernel files must be synced to ~/.egos
+if echo "$STAGED" | grep -Eq '^\.guarani/|^\.windsurf/workflows/|^docs/SSOT_REGISTRY\.md$|^docs/CAPABILITY_REGISTRY\.md$|^docs/modules/CHATBOT_SSOT\.md$'; then
+  echo "  [3/5] governance sync: checking kernel -> ~/.egos drift..."
+  sh scripts/governance-sync.sh --check >/dev/null 2>&1 || {
+    echo "❌ BLOCKED: Governance drift detected between kernel and ~/.egos."
+    echo "   Run: bun run governance:sync:exec"
+    exit 1
+  }
+else
+  echo "  [3/5] governance sync: no canonical governance changes staged"
+fi
+
+# 4.2. Skills drift — warn if egos/ copy diverges from .egos/ SSOT (non-blocking)
+# Cobre /start, /end e qualquer skill em check-skills-drift.sh
+if echo "$STAGED" | grep -qE '^\.claude/commands/(start|end)\.md$' || [ -f scripts/check-skills-drift.sh ]; then
+  if [ -x scripts/check-skills-drift.sh ]; then
+    bash scripts/check-skills-drift.sh --quiet || {
+      echo "⚠️  Skills drift: edit propagated to one location only."
+      echo "   Run: bash scripts/check-skills-drift.sh --fix"
+      echo "   (Non-blocking — commit proceeds.)"
+    }
+  fi
+fi
+
+# 5. SSOT Drift — Check file size limits
+echo "  [4/5] SSOT drift: checking file size limits..."
+check_lines() {
+  _cl_file="$1"; _cl_max="$2"
+  if [ -f "$_cl_file" ]; then
+    _cl_lines=$(wc -l < "$_cl_file")
+    if [ "$_cl_lines" -gt "$_cl_max" ]; then
+      echo "SSOT DRIFT: $_cl_file has $_cl_lines lines (max: $_cl_max)"
+      return 1
+    fi
+  fi
+}
+
+check_lines "AGENTS.md" 200 || exit 1
+
+# TASKS.md enforcement v2 — auto-archive [x] + size limits
+# Spec: docs/governance/TASKS_OPERATING_MODEL_v1.md §2 (updated 2026-05-11)
+# Thresholds: soft-warn=250, archive-required=400, hard-block=600
+if [ -f "TASKS.md" ]; then
+
+  # 0) AUTO-ARCHIVE: move [x] lines to TASKS_ARCHIVE on EVERY commit
+  #    v2.1 (2026-05-11): runs whenever [x] exists in working tree, not just when
+  #    TASKS.md is staged. Closes gap where [x] could persist across commits that
+  #    don't touch TASKS.md. Resulting changes are auto-staged into this commit.
+  _done_count=$(grep -c '^- \[x\]' TASKS.md 2>/dev/null || true)
+  _done_count=${_done_count:-0}
+  if [ "${_done_count}" -gt 0 ] 2>/dev/null; then
+    # Skip if working tree has uncommitted TASKS.md changes that aren't staged
+    # (avoid clobbering active agent edits)
+    _has_unstaged=$(git diff --name-only TASKS.md 2>/dev/null | wc -l)
+    if echo "$STAGED" | grep -q "TASKS\.md" || [ "${_has_unstaged:-0}" -eq 0 ]; then
+      echo "  🗄️  Auto-archiving $_done_count completed task(s) from TASKS.md..."
+      if command -v bun >/dev/null 2>&1; then
+        bun scripts/tasks-archive.ts --exec --root="$(pwd)" 2>/dev/null && \
+          git add TASKS.md TASKS_ARCHIVE.md 2>/dev/null && \
+          echo "  ✅ Auto-archive done — TASKS.md + TASKS_ARCHIVE.md staged into this commit"
+      fi
+    else
+      echo "  ⚠️  TASKS.md has $_done_count [x] but unstaged changes detected — skipping auto-archive (manual: bun scripts/tasks-archive.ts --exec)"
+    fi
+  fi
+
+  _tasks_lines=$(wc -l < "TASKS.md")
+  _policy_grace=""
+  if [ -f ".tasks-policy.json" ]; then
+    # jq preferred (cross-platform); python3 fallback; grep last resort
+    _policy_grace=$(printf '%s' "$(cat .tasks-policy.json)" | json_get '.grace_end' 2>/dev/null || \
+      python3 -c "import json,sys; p=json.load(open('.tasks-policy.json')); print(p.get('grace_end',''))" 2>/dev/null || \
+      grep -o '"grace_end"[[:space:]]*:[[:space:]]*"[0-9-]*"' .tasks-policy.json | grep -o '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' || \
+      true)
+  fi
+
+  # 1) IMMEDIATE BLOCK: duplicate task IDs (no grace period)
+  _dup_ids=$(grep -oP '(?<=\*\*)[A-Z]+-[0-9]+(?=\s*\[)' TASKS.md 2>/dev/null | sort | uniq -d | head -5 || true)
+  if [ -n "$_dup_ids" ]; then
+    echo "  🔴 BLOCKED: Duplicate task IDs in TASKS.md:"
+    echo "$_dup_ids" | sed 's/^/    - /'
+    echo "  Fix: remove or renumber duplicate IDs before committing."
+    exit 1
+  fi
+
+  # 2) SIZE CHECKS (new thresholds: 250/400/600)
+  if [ "$_tasks_lines" -ge 600 ]; then
+    _today=$(date +%Y-%m-%d)
+    if [ -n "$_policy_grace" ] && [ "$_today" \< "$_policy_grace" ]; then
+      echo "  🚨 TASKS.md has $_tasks_lines lines (hard-block: 600). Grace until $_policy_grace."
+      echo "     Move long-term tasks to docs/strategy/ROADMAP.md + run: bun scripts/tasks-archive.ts --exec"
+    else
+      echo "  🔴 BLOCKED: TASKS.md has $_tasks_lines lines (≥600). Archive or move to ROADMAP.md."
+      echo "     bun scripts/tasks-archive.ts --exec && git add TASKS.md TASKS_ARCHIVE.md"
+      exit 1
+    fi
+  elif [ "$_tasks_lines" -ge 400 ]; then
+    echo "  🚨 URGENT: TASKS.md has $_tasks_lines lines (archive required at 400). Run: bun scripts/tasks-archive.ts --exec"
+  elif [ "$_tasks_lines" -ge 250 ]; then
+    echo "  ⚠️  TASKS.md has $_tasks_lines lines (soft warn at 250). Archive when convenient."
+  fi
+fi
+
+check_lines ".windsurfrules" 250 || exit 1
+check_lines ".guarani/PREFERENCES.md" 100 || exit 1
+check_lines "docs/SSOT_REGISTRY.md" 200 || exit 1
+
+# 5.5. LLMRefs Staleness (non-blocking warning)
+if echo "$STAGED" | grep -q '\.md$'; then
+  STALE=$(python3 scripts/qa/llmrefs_staleness.py --root . 2>&1 | grep "LLMREFS_STALE" | grep -oP '\d+' || echo "0")
+  if [ "$STALE" -gt 0 ] 2>/dev/null; then
+    echo "  ⚠️  LLMRefs: $STALE stale link(s) in docs (non-blocking, run: python3 scripts/qa/llmrefs_staleness.py --root .)"
+  fi
+fi
+
+# 5.5. Doc-Drift Check — Layer 2 of the Doc-Drift Shield
+echo "  [5.5/8] doc-drift: verifying .egos-manifest.yaml claims..."
+if [ -t 0 ]; then
+  bash .husky/doc-drift-check.sh || exit 1
+else
+  bash .husky/doc-drift-check.sh </dev/null || exit 1
+fi
+
+# 5.7. SSOT Gate — Block new .md files that belong to existing SSOTs
+NEW_MD_FILES=$(git diff --cached --name-only --diff-filter=A 2>/dev/null | grep '\.md$' || true)
+if [ -n "$NEW_MD_FILES" ]; then
+  COMMIT_MSG=$(cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
+  if echo "$COMMIT_MSG" | grep -q "SSOT-NEW:"; then
+    echo "  [5.7/8] ssot-gate: override detected (SSOT-NEW in commit message) — skipping"
+  else
+    echo "  [5.7/8] ssot-gate: checking new .md files against SSOT map..."
+    SSOT_BLOCK=0
+    for md_file in $NEW_MD_FILES; do
+      if bun scripts/ssot-router.ts --file "$md_file" --warn-only 2>&1; then
+        true
+      else
+        SSOT_BLOCK=1
+      fi
+    done
+    if [ "$SSOT_BLOCK" -eq 1 ]; then
+      echo ""
+      echo "❌ BLOCKED: New .md file belongs to existing SSOT domain."
+      echo "   See suggestions above. To override: add 'SSOT-NEW: <reason>' to commit message."
+      exit 1
+    fi
+  fi
+fi
+
+# 5.8. AUTO-GEN Guard — Block handwritten edits inside AUTO-GEN blocks (INC-006 MSSOT-002)
+# Override: include 'MSSOT-MANUAL-OVERRIDE: <reason>' in commit body.
+echo "  [5.8/8] auto-gen guard: checking AUTO-GEN block integrity..."
+COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+if [ -f "$COMMIT_MSG_FILE" ] && grep -q "MSSOT-MANUAL-OVERRIDE:" "$COMMIT_MSG_FILE" 2>/dev/null; then
+  echo "  [5.8/8] auto-gen guard: MSSOT-MANUAL-OVERRIDE detected — skipping"
+else
+  bun scripts/auto-gen-guard.ts --staged-only || {
+    echo "❌ BLOCKED: Handwritten edit inside AUTO-GEN block (INC-006)."
+    echo "   Override: add 'MSSOT-MANUAL-OVERRIDE: <reason>' to commit body."
+    exit 1
+  }
+fi
+
+# 5.85. SSOT Claim Check — Warn on scored tables without evidence (INC-006 SHIM-004, non-blocking)
+echo "  [5.85/8] ssot claim-check: scanning for phantom-prone scored tables..."
+bun scripts/ssot-claim-check.ts --all 2>/dev/null | head -6 || true
+
+# 5.9. Evidence Gate — §33 Evidence-First Principle (warning-only until 2026-04-16)
+echo "  [5.9/8] evidence-gate: checking claim backing in staged docs..."
+bun scripts/evidence-gate.ts --staged-only 2>/dev/null || {
+  echo "⚠️  evidence-gate: script error (non-blocking). Run: bun scripts/evidence-gate.ts --staged-only"
+}
+
+# 5.95. Capability Detector — validate new capabilities have CBC + eval (MCP-F4-001)
+# Ativado via EGOS_CAPABILITY_VALIDATE=1 (warn) ou EGOS_CAPABILITY_STRICT=1 (block)
+bash .husky/_checks/5.95-capability-detector.sh 2>/dev/null || true
+
+# 13. Registry Parity — hard-fail on NEW packages/apps/agents missing §-entry (REG-PARITY-001)
+# Escape: `REGISTRY-PARITY-SKIP: <reason>` in commit body, or EGOS_REGISTRY_PARITY_SKIP=<reason>
+# SSOT: docs/governance/REGISTRY_PARITY_DECISION.md
+echo "  [13/N] registry-parity: scanning staged adds for missing registry entries..."
+bash .husky/_checks/13-registry-parity.sh || exit 1
+
+# 6. File Intelligence — Classification + Compliance + PII scan
+echo "  [5/5] file intelligence: classifying and checking staged files..."
+bash scripts/file-intelligence.sh 2>/dev/null || {
+  echo "❌ BLOCKED: File intelligence found critical violations."
+  echo "   Run: bash scripts/file-intelligence.sh for details"
+  exit 1
+}
+
+# 7. Vocab Guard — Block phantom architecture terms in docs
+STAGED_MD=$(git diff --cached --name-only 2>/dev/null | grep '\.md$' || true)
+if [ -n "$STAGED_MD" ]; then
+  PHANTOM_FOUND=0
+  for md_file in $STAGED_MD; do
+    if [ -f "$md_file" ]; then
+      MATCHES=$(git diff --cached -- "$md_file" 2>/dev/null | grep '^+' | grep -v '^+++' | \
+        grep -iE '\b(NATS transport|NATS broker|NATS server|ZKP|zero.knowledge proof|shadow node|QuantumSearch|quantum search|DAG engine|DAG workflow|DAG.based pipeline|Gardener cycle|Gardener v[0-9]|gardener-scan|gardener-prune|Cognee.Bridge|EGOS.CogneeBridge|EGOS.Memory v[0-9]|Hyperspace watcher|Hyperspace-watcher|\bKOIOS\b|\bCORUJA\b|qmd hybrid indexer|MemFactory|ATRiAN pre-forget gate|MemPalace v[0-9]|ETHIK points|Bjork.s New Theory)\b' | grep -v 'vocab-guard: planned' || true)
+      if [ -n "$MATCHES" ]; then
+        echo "  VOCAB GUARD: $md_file adds phantom architecture terms:"
+        echo "$MATCHES" | head -5 | sed 's/^/    /'
+        PHANTOM_FOUND=1
+      fi
+    fi
+  done
+  if [ "$PHANTOM_FOUND" -eq 1 ]; then
+    echo ""
+    echo "❌ BLOCKED: Documentation references unimplemented architecture."
+    echo "   Terms blocked: NATS, ZKP, shadow nodes, QuantumSearch, DAG engine/workflow"
+    echo "   Also blocked (INC-005 phantom terms): Gardener cycle/v2+, Cognee-Bridge, MemPalace vN,"
+    echo "   Hyperspace watcher, KOIOS, CORUJA, qmd hybrid indexer, MemFactory, ETHIK points, ATRiAN pre-forget gate"
+    echo "   These are planned-only — no code exists. To proceed:"
+    echo "   Option A: Add code first, then document it."
+    echo "   Option B: Mark planned terms with: <!-- vocab-guard: planned -->"
+    echo "   Option C: git commit --no-verify (requires justification in commit message)"
+    exit 1
+  fi
+  echo "  [7/7] vocab guard: no phantom architecture terms in staged docs"
+fi
+
+# 8. Legacy Code Detector — warns on debug logs, TODOs, dead code
+bash scripts/check-legacy-code.sh 2>/dev/null || true  # non-blocking
+
+# 9. Supabase Safety (INC-004) — Realtime publication, rate limits, RLS
+STAGED_TS=$(git diff --cached --name-only 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|sql)$' || true)
+if [ -n "$STAGED_TS" ]; then
+  echo "  [9/9] supabase-safety: checking DB write patterns..."
+  bash scripts/check-supabase-safety.sh 2>/dev/null || {
+    echo "❌ BLOCKED: Supabase safety violations found."
+    echo "   Run: bash scripts/check-supabase-safety.sh for details"
+    exit 1
+  }
+fi
+
+# 9.5. RLS Policy Validator (INC-006 prevention) — Catch misconfigured {public} roles
+STAGED_SQL=$(git diff --cached --name-only 2>/dev/null | grep -E '\.sql$' || true)
+if [ -n "$STAGED_SQL" ]; then
+  echo "  [9.5/10] rls-validator: checking Row-Level Security policy roles..."
+  if command -v bun > /dev/null 2>&1 && [ -f "scripts/security/rls-validator.ts" ]; then
+    if ! bun scripts/security/rls-validator.ts --staged-only 2>/dev/null; then
+      echo "❌ BLOCKED: RLS policy violations detected (role misconfiguration)."
+      echo "   Fix violations above before committing. See: docs/security/RLS_POLICY_GUIDE.md"
+      exit 1
+    fi
+  else
+    echo "  ⚠️  rls-validator: script not found (skipping)"
+  fi
+fi
+
+# README freshness gate
+if [ -f "$HOME/.egos/hooks/readme-freshness.sh" ]; then
+  bash "$HOME/.egos/hooks/readme-freshness.sh" "${1:-}" || exit 1
+else
+  echo "  [readme-freshness] hook not installed in ~/.egos/hooks — skipping (CROSS_PLATFORM_RULES §3)"
+fi
+
+# §10 FLOW VALIDATION — warn when new API routes staged without smoke evidence
+NEW_API_ROUTES=$(git diff --cached --name-only 2>/dev/null | grep "route\.ts$\|route\.js$" | wc -l)
+if [ "$NEW_API_ROUTES" -gt 0 ]; then
+  echo "  [flow-validation] §10 CLAUDE.md: $NEW_API_ROUTES nova(s) route(s) API staged"
+  # Verificar se commit message ou STAGED tem evidência de smoke
+  HAS_SMOKE=$(git diff --cached 2>/dev/null | grep -ciE "HTTP [0-9]{3}|curl|smoke|tested|SMOKE-TESTED|SMOKE-PENDING" || true)
+  if [ "$HAS_SMOKE" -eq 0 ]; then
+    echo "  ⚠️  [flow-validation] Nenhuma evidência de smoke test detectada nos arquivos staged."
+    echo "  ⚠️  Execute curl contra o endpoint e inclua o resultado no commit message."
+    echo "  ⚠️  Ou adicione: <!-- SMOKE-PENDING: motivo --> no arquivo se ainda não deployado."
+    echo "  ⚠️  (non-blocking — §10 CLAUDE.md exige smoke antes de declarar [DONE])"
+  else
+    echo "  ✅ [flow-validation] Evidência de smoke detectada"
+  fi
+fi
+
+# README drift — warn when apps/ or packages/ code changes without README update
+CODE_APPS=$(git diff --cached --name-only 2>/dev/null | grep -E "^(apps|packages)/" | wc -l)
+README_APPS=$(git diff --cached --name-only 2>/dev/null | grep -iE "readme" | wc -l)
+if [ "$CODE_APPS" -gt 3 ] && [ "$README_APPS" -eq 0 ]; then
+  echo "  ⚠️  [readme-drift] $CODE_APPS arquivos de app/package staged sem README atualizado."
+  echo "  ⚠️  Considere atualizar o README do app afetado (§7 SSOT + CLAUDE.md Convenções)."
+fi
+
+# SKILLS-002: Write context signals for /start skill auto-activation
+SIGNALS_FILE="$HOME/.egos/context-signals.jsonl"
+mkdir -p "$(dirname "$SIGNALS_FILE")" 2>/dev/null || true
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+REPO_NAME=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || echo unknown)")
+STAGED_COUNT=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+STAGED_TYPES=$(git diff --cached --name-only 2>/dev/null | grep -oE '\.[a-z]+$' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+# Detect signal type from what was staged
+SIGNAL="commit"
+if git diff --cached --name-only 2>/dev/null | grep -qE '\.guarani/|AGENTS\.md$|CLAUDE\.md$'; then
+  SIGNAL="governance_change"
+elif git diff --cached --name-only 2>/dev/null | grep -qE '\.husky/|hooks/'; then
+  SIGNAL="hook_change"
+elif git diff --cached --name-only 2>/dev/null | grep -qE '^docs/'; then
+  SIGNAL="docs_change"
+elif git diff --cached --name-only 2>/dev/null | grep -qE '\.(ts|tsx|js|jsx|py)$'; then
+  SIGNAL="code_change"
+fi
+
+printf '{"ts":"%s","repo":"%s","signal":"%s","detail":"%s files (%s)"}\n' \
+  "$TS" "$REPO_NAME" "$SIGNAL" "$STAGED_COUNT" "$STAGED_TYPES" >> "$SIGNALS_FILE"
+
+# Keep only last 100 signals (avoid unbounded growth)
+if [ -f "$SIGNALS_FILE" ]; then
+  tail -100 "$SIGNALS_FILE" > "${SIGNALS_FILE}.tmp" && mv "${SIGNALS_FILE}.tmp" "$SIGNALS_FILE"
+fi
+
+# CROSSREFS (GOV-W2-001): warn on broken markdown links + archived textual refs (flags A3/A10)
+# Warn-only — never blocks. Runs only when .md files are staged.
+if git diff --cached --name-only 2>/dev/null | grep -qE '\.md$'; then
+  if command -v bun > /dev/null 2>&1 && [ -f "scripts/check-crossrefs.ts" ]; then
+    echo "  [cross-refs] checking broken refs in staged markdown..."
+    bun scripts/check-crossrefs.ts --report 2>/dev/null | grep -E "^  ARCHIVED:|^  MISSING:|ARCHIVED:|MISSING:" | head -10 || true
+  fi
+fi
+
+  # [HEALTH] Periodic system health check (VPS, DBs, Hermes) — 24h interval
+  if [ -f "scripts/health-check-periodic.sh" ]; then
+    bash scripts/health-check-periodic.sh || exit 1
+  fi
+
+# [AI-WORKFLOW R3] Bloqueia commit com marcadores de merge não resolvidos
+# Ver: docs/governance/AI_AGENT_WORKFLOW.md
+if [ -x ".husky/_checks/conflict-markers.sh" ]; then
+  .husky/_checks/conflict-markers.sh || exit 1
+fi
+
+# [SSOT-POLICY 2026-05-18] Bloqueia leaf-repos declarando canonical/SSOT
+# Ver: docs/governance/SSOT_LOCATION_POLICY.md
+# Skip no kernel egos (auto-detect by repo name).
+if [ -x ".husky/_checks/11-leaf-canonical-check.sh" ]; then
+  .husky/_checks/11-leaf-canonical-check.sh || exit 1
+fi
+
+# === Anti-Rsync-Prod Gate (T0 #7 — added 2026-05-13 INC-PROD-001) ===
+# Bloqueia commits que adicionam rsync direto pra produção em scripts/shell
+# fora dos scripts canonical scripts/deploy-*.sh (que implementam gates R1-R8).
+# SSOT: docs/governance/PRODUCTION_DEPLOY_RULES.md §4
+STAGED_SHELL=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null | \
+  grep -E '\.(sh|bash|ts|js|mjs|cjs)$|^scripts/|^\.husky/' | \
+  grep -v '^scripts/deploy-' | \
+  grep -v '_archived' || true)
+if [ -n "$STAGED_SHELL" ]; then
+  PROD_RSYNC=""
+  for f in $STAGED_SHELL; do
+    [ -f "$f" ] || continue
+    # Detecta rsync para domínios de produção EGOS (hetzner alias OU IP VPS OU prod paths)
+    if git diff --cached -- "$f" 2>/dev/null | grep -E '^\+' | grep -v '^\+\+\+' | \
+       grep -qE '(rsync.*hetzner:|rsync.*204\.168\.217\.125|rsync.*/opt/apps/|rsync.*/opt/egos-)'; then
+      PROD_RSYNC="$PROD_RSYNC $f"
+    fi
+  done
+  if [ -n "$PROD_RSYNC" ]; then
+    echo ""
+    echo "❌ BLOCKED: rsync direto para produção fora de scripts/deploy-*.sh:"
+    for f in $PROD_RSYNC; do echo "    $f"; done
+    echo ""
+    echo "   Origem: INC-PROD-001 — rsync sem gates causou catálogo vazio em produção."
+    echo "          Cada deploy DEVE usar script com R1-R8."
+    echo ""
+    echo "   Soluções:"
+    echo "   1. Mover rsync pra scripts/deploy-<app>.sh seguindo template scripts/deploy-app.sh"
+    echo "   2. Adicionar gates: env validation, bundle compiled check, backup, smoke test, rollback"
+    echo "   3. SSOT: docs/governance/PRODUCTION_DEPLOY_RULES.md §4"
+    echo ""
+    echo "   Override emergencial (use com cuidado, justifique em commit message):"
+    echo "     PROD_RSYNC_OVERRIDE=1 git commit ..."
+    if [ "${PROD_RSYNC_OVERRIDE:-0}" != "1" ]; then
+      exit 1
+    else
+      echo "   ⚠️  OVERRIDE detectado (PROD_RSYNC_OVERRIDE=1) — commit prossegue"
+    fi
+  fi
+fi
+# === End Anti-Rsync-Prod Gate ===
+
+# === Phantom CBC Check — PHANTOM-CBC-HOOK-001 (2026-05-18) ===
+# Bloqueia CBC-*.md com status alpha/beta/stable mas case_count=0 (INC-008)
+# Override: "PHANTOM_OVERRIDE: <reason>" no corpo do commit
+if [ -x ".husky/_checks/12-phantom-cbc.sh" ]; then
+  .husky/_checks/12-phantom-cbc.sh || exit 1
+fi
+# === End Phantom CBC Check ===
+
+# === Codex Review (opt-in, non-blocking) — added 2026-05-12 ===
+# Ativa com: export EGOS_CODEX_REVIEW=1
+# SSOT: docs/governance/MULTI_LLM_ORCHESTRATION.md §4
+if [ "${EGOS_CODEX_REVIEW:-0}" = "1" ] && command -v codex >/dev/null 2>&1; then
+  DIFF_LINES=$(git diff --cached --shortstat 2>/dev/null | grep -oE '[0-9]+' | head -1 || echo 0)
+  CRITICAL=$(git diff --cached --name-only 2>/dev/null | grep -E "^(auth|migrations|lib/prompts|docs/governance)/" | head -1 || true)
+  MODEL="gpt-5.3-codex"
+  if [ "${DIFF_LINES:-0}" -gt 500 ] || [ -n "$CRITICAL" ]; then
+    MODEL="gpt-5.5"
+  fi
+  echo "  [codex-review] running non-blocking review (model=$MODEL)..."
+  git diff --cached | codex exec --model "$MODEL" "Review this staged diff briefly. Flag any bugs, security issues, or anti-patterns. Be concise." > .git/CODEX_REVIEW.md 2>&1 || true
+  REVIEW_LINES=$(wc -l < .git/CODEX_REVIEW.md 2>/dev/null || echo 0)
+  echo "  [codex-review] review at .git/CODEX_REVIEW.md (${REVIEW_LINES} lines)"
+fi
+# === End Codex Review ===
+
+# [doc-sync] Enforcer code↔docs (Enio 2026-05-20)
+# Default = warn-only. Ative strict via: export EGOS_DOC_SYNC_STRICT=1
+if [ -x "scripts/pre-commit-doc-sync.sh" ]; then
+  bash scripts/pre-commit-doc-sync.sh ".git/COMMIT_EDITMSG" 2>&1
+  DOC_SYNC_EXIT=$?
+  if [ "$DOC_SYNC_EXIT" = "2" ]; then
+    echo "❌ EGOS Pre-Commit: doc-sync BLOCKED. Resolva e tente novamente."
+    exit 1
+  fi
+fi
+# === End doc-sync ===
+
+# [governance-boundary] Central EGOS: governance NUNCA em clients/<slug>/ (2026-05-21)
+if [ -x "scripts/pre-commit-governance-boundary.sh" ]; then
+  bash scripts/pre-commit-governance-boundary.sh ".git/COMMIT_EDITMSG" 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ EGOS Pre-Commit: governance-boundary BLOCKED."
+    exit 1
+  fi
+fi
+# === End governance-boundary ===
+
+# [db-discipline] INC-DB-001 (2026-05-22) — Anti-bug silencioso Supabase
+if [ -x "scripts/pre-commit-db-discipline.sh" ]; then
+  bash scripts/pre-commit-db-discipline.sh 2>&1
+  if [ $? -ne 0 ]; then
+    echo "❌ EGOS Pre-Commit: db-discipline BLOCKED. SSOT: docs/governance/DB_DISCIPLINE.md"
+    exit 1
+  fi
+fi
+# === End db-discipline ===
+
+echo "✅ EGOS Pre-Commit: Commit approved."

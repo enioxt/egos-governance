@@ -1,0 +1,8 @@
+# TruffleHog configuration for egos-governance
+# Excludes paths that are not part of the committed content
+
+detectors: []
+
+# Exclude git internals (auth tokens in remote URLs are not committed content)
+exclude_paths:
+  - .git/

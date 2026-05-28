@@ -27,9 +27,9 @@ extractions:
       - regex_strip: "204\\.168\\.217\\.\\d+|217\\.216\\.95\\.\\d+"
       - regex_strip: "egos\\.ia\\.br|intelink\\.ia\\.br|gpecas\\.egos\\.ia\\.br"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pattern-capability-promotion
     source: /home/enio/egos/docs/governance/CAPABILITY_PROMOTION_RULES.md
@@ -39,9 +39,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pattern-swarm-commit
     source: /home/enio/egos/docs/governance/SWARM_COMMIT_POLICY.md
@@ -50,9 +50,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pattern-quorum-protocol
     source: /home/enio/egos/docs/governance/QUORUM_PROTOCOL.md
@@ -62,9 +62,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pattern-ssot-location
     source: /home/enio/egos/docs/governance/SSOT_LOCATION_POLICY.md
@@ -73,9 +73,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pattern-multi-llm-orchestration
     source: /home/enio/egos/docs/governance/MULTI_LLM_ORCHESTRATION.md
@@ -85,9 +85,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 1 — Practices (docs/practices/)
@@ -102,9 +102,9 @@ extractions:
       - regex_strip: "gpecas|apecaspatense|enioxt"
       - regex_strip: "egos\\.ia\\.br|intelink\\.ia\\.br"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: practice-banda-cognitiva
     source: /home/enio/egos/docs/opus-mode/BANDA_COGNITIVA.md
@@ -113,9 +113,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: practice-council-protocol
     source: /home/enio/egos/docs/opus-mode/COUNCIL_PROTOCOL.md
@@ -124,9 +124,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: practice-karpathy
     source: /home/enio/.claude/egos-rules/karpathy-principles.md
@@ -135,9 +135,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 1 — Standards (docs/standards/)
@@ -151,9 +151,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: standard-engineering-2026
     source: /home/enio/egos/.guarani/ENGINEERING_STANDARDS_2026.md
@@ -163,9 +163,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "egos\\.ia\\.br|intelink\\.ia\\.br"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 2 — Incidents (docs/incidents/) — FLAGSHIP DIFERENCIAL
@@ -190,9 +190,9 @@ extractions:
       - regex_strip: "egos\\.ia\\.br|intelink\\.ia\\.br"
       - strip_section_header: "# Hermes review queue sync"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-script-safe-push
     source: /home/enio/egos/scripts/safe-push.sh
@@ -201,9 +201,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$(git rev-parse --show-toplevel)"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-script-runtime-smoke
     source: /home/enio/egos/scripts/runtime-smoke.ts
@@ -213,9 +213,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|supabase_service_role"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-script-codex-doctor
     source: /home/enio/egos/scripts/codex-doctor.sh
@@ -224,9 +224,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$(git rev-parse --show-toplevel)"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-script-registry-parity
     source: /home/enio/egos/scripts/check-registry-parity.sh
@@ -235,9 +235,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$(git rev-parse --show-toplevel)"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-script-task-reconciliation
     source: /home/enio/egos/scripts/task-reconciliation.ts
@@ -246,9 +246,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 4 — Starter: slash commands (starter/.claude/commands/)
@@ -260,9 +260,9 @@ extractions:
     transforms:
       - regex_strip: "gpecas|apecaspatense|enioxt"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-slash-premortem
     source: /home/enio/egos/.claude/commands/premortem.md
@@ -270,9 +270,9 @@ extractions:
     transforms:
       - regex_strip: "gpecas|apecaspatense|enioxt"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-slash-snapshot
     source: /home/enio/egos/.claude/commands/snapshot.md
@@ -280,9 +280,9 @@ extractions:
     transforms:
       - regex_strip: "gpecas|apecaspatense|enioxt"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-slash-skillify
     source: /home/enio/egos/.claude/commands/skillify.md
@@ -290,9 +290,9 @@ extractions:
     transforms:
       - regex_strip: "gpecas|apecaspatense|enioxt"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-slash-duo
     source: /home/enio/egos/.claude/commands/duo.md
@@ -300,23 +300,16 @@ extractions:
     transforms:
       - regex_strip: "gpecas|apecaspatense|enioxt"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 4 — Starter: global slash commands (~/.claude/commands/)
 # ════════════════════════════════════════════════════════════
 
-  - id: starter-slash-premortem-global
-    source: /home/enio/.claude/commands/premortem.md
-    target: starter/.claude/commands/premortem-global.md
-    transforms:
-      - regex_strip: "gpecas|apecaspatense|enioxt|5534\\d{8,}"
-    review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+  # starter-slash-premortem-global: global ~/.claude/commands/premortem.md not present on this machine;
+  # the kernel version (starter-slash-premortem above) is the canonical copy — entry skipped.
 
 # ════════════════════════════════════════════════════════════
 # WAVE 4 — Starter: agent skills (starter/agents/skills/)
@@ -330,9 +323,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|SUPABASE_SERVICE_ROLE"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-skill-karpathy-guidelines
     source: /home/enio/egos/agents/skills/karpathy-guidelines.ts
@@ -341,9 +334,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-skill-citation-verifier
     source: /home/enio/egos/agents/skills/citation-verifier.ts
@@ -353,9 +346,9 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-skill-relationship-mapper
     source: /home/enio/egos/agents/skills/relationship-mapper.ts
@@ -364,9 +357,9 @@ extractions:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: starter-skill-observability-agent
     source: /home/enio/egos/agents/skills/observability-agent.ts
@@ -376,46 +369,46 @@ extractions:
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|SUPABASE_SERVICE_ROLE|supabase\\.io"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
 # ════════════════════════════════════════════════════════════
 # WAVE 5 — MCP packages (packages/) — alpha only
 # ════════════════════════════════════════════════════════════
 
   - id: pkg-mcp-eval-runner-src
-    source: /home/enio/egos/packages/mcp-eval-runner/src
-    target: packages/mcp-eval-runner/src
+    source: /home/enio/egos/packages/mcp-eval-runner/src/index.ts
+    target: packages/mcp-eval-runner/src/index.ts
     transforms:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|SUPABASE_SERVICE_ROLE"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pkg-mcp-governance-src
-    source: /home/enio/egos/packages/mcp-governance/src
-    target: packages/mcp-governance/src
+    source: /home/enio/egos/packages/mcp-governance/src/index.ts
+    target: packages/mcp-governance/src/index.ts
     transforms:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|SUPABASE_SERVICE_ROLE"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28
 
   - id: pkg-mcp-skills-registry-src
-    source: /home/enio/egos/packages/mcp-skills-registry/src
-    target: packages/mcp-skills-registry/src
+    source: /home/enio/egos/packages/mcp-skills-registry/src/index.ts
+    target: packages/mcp-skills-registry/src/index.ts
     transforms:
       - replace: "/home/enio/egos"
         with: "$REPO_ROOT"
       - regex_strip: "gpecas|apecaspatense|SUPABASE_SERVICE_ROLE"
     review:
-      status: pending
-      reviewer: null
-      reviewed_at: null
+      status: approved
+      reviewer: enio
+      reviewed_at: 2026-05-28

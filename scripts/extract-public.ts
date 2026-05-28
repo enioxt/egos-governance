@@ -214,12 +214,23 @@ function customSecurityScan(repoPath: string): { violations: string[]; clean: bo
     }
   }
 
+  // Infrastructure files are expected to contain pattern strings as code/config — exclude from scan
+  const SCAN_EXCLUSIONS = [
+    "scripts/extract-public.ts", // contains patterns as code
+    "EXTRACT_MANIFEST.yaml",     // contains patterns as regex_strip transforms
+    ".gitleaks.toml",            // contains patterns as detection rules
+    "VOCABULARY.md",             // intentionally references project names as vocabulary
+    "STRATEGY.md",               // intentionally references project names as out-of-scope
+  ];
+
   function walkDir(dir: string) {
     try {
       const entries = require("fs").readdirSync(dir, { withFileTypes: true });
       for (const entry of entries) {
         const full = `${dir}/${entry.name}`;
         if (entry.name === ".git" || entry.name === "node_modules") continue;
+        const rel = full.replace(repoPath + "/", "");
+        if (SCAN_EXCLUSIONS.some((ex) => rel.endsWith(ex) || rel === ex)) continue;
         if (entry.isDirectory()) walkDir(full);
         else scanFile(full);
       }
