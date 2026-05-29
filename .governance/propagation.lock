@@ -1,0 +1,7 @@
+{
+  "content_sha256": "1bd307296a86f576823c399ed43f8d2cb87e14ff8de50f0581a1fcd576e0c391",
+  "tier": "public-fork",
+  "propagated_at": "2026-05-29",
+  "script_version": "1.1.0",
+  "source": "github.com/enioxt/egos-governance"
+}
