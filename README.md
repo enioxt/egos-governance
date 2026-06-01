@@ -7,6 +7,9 @@ Battle-tested patterns, pre-commit pipeline, and meta-cognitive skills for teams
 [![CI](https://github.com/enioxt/egos-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/enioxt/egos-governance/actions/workflows/ci.yml)
 [![Security](https://github.com/enioxt/egos-governance/actions/workflows/security.yml/badge.svg)](https://github.com/enioxt/egos-governance/actions/workflows/security.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status: Beta](https://img.shields.io/badge/governance%20docs-beta-blue.svg)](#status)
+
+> **Maturity:** governance docs (patterns · incidents · standards) are **Beta** — battle-tested, stable enough to adopt. The `packages/` (MCP servers) remain **Alpha** — see [Status](#status).
 
 ---
 
