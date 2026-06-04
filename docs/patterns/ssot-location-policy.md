@@ -1,8 +1,8 @@
 # SSOT Location Policy — egos kernel only
 
 > **Status:** ACCEPTED — regra T1 canonical
-> **Data:** 2026-05-18 | **Decisor:** Enio | **Autor:** Claude Sonnet 4.6
-> **Origem:** Enio 2026-05-18 — *"como vou achar SSOT/canonical no 852? ou no forja? o lugar correto é sempre o EGOS framework"*
+> **Data:** 2026-05-18 | **Decisor:** o mantenedor | **Autor:** Claude Sonnet 4.6
+> **Origem:** o mantenedor 2026-05-18 — *"como vou achar SSOT/canonical no 852? ou no forja? o lugar correto é sempre o EGOS framework"*
 
 ---
 
@@ -14,7 +14,7 @@ Leaf-repos (feature-repos, tools, integrations) **não podem** declarar nada com
 
 ## §2. Por quê
 
-1. **Achabilidade.** Enio (e qualquer agente) precisa saber **onde procurar**. 1 lugar > N lugares.
+1. **Achabilidade.** o mantenedor (e qualquer agente) precisa saber **onde procurar**. 1 lugar > N lugares.
 2. **Drift.** Quando o canonical mora num leaf, mudanças no kernel não propagam — e mudanças no leaf não voltam para a base. Resultado: documentação desatualizada (caso 852 == canonical, contradito por handoffs 2026-05-*).
 3. **Cross-projeto.** Decisões arquiteturais valem para múltiplos projetos. Não podem viver no projeto que apenas as descobriu primeiro.
 4. **Princípio EGOS já documentado.** `docs/CLAUDE.md` §7 SSOT map lista 18 domínios — todos apontam para arquivos no kernel. Leaf-canonical é violação desse mapa.
@@ -130,4 +130,4 @@ Após mudança em `egos/docs/CAPABILITY_REGISTRY.md` ou `docs/governance/`, roda
 
 ---
 
-*v1.0 — 2026-05-18 | Aceito pelo Enio em sessão 2026-05-18*
+*v1.0 — 2026-05-18 | Aceito pelo mantenedor em sessão 2026-05-18*

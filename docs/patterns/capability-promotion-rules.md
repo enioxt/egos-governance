@@ -27,7 +27,7 @@ Cada promoção exige:
 | `alpha` | 1 contexto, sem eval | Owner |
 | `beta` | ≥3 golden cases, 2+ contextos | Owner + CI |
 | `rc` | 1-2 semanas observação, SLO definido | Owner + on-call |
-| `production` | SLO + on-call + threat model | Owner + Enio |
+| `production` | SLO + on-call + threat model | Owner + mantenedor |
 | `deprecated` | Substituída por outra capability | Owner |
 
 **Removido:** `idea` (não é capability — é HARVEST entry).
@@ -67,7 +67,7 @@ Cada promoção exige:
 - [ ] **OAuth2 + escopos** configurados se network-exposed
 - [ ] **Audit log** Supabase escrevendo
 - [ ] **Pre-flight checklist** Sprint 3 marcado (todos os itens)
-- [ ] **Aprovação Enio** explícita
+- [ ] **Aprovação do mantenedor** explícita
 - [ ] **Documentação para humanos** (`docs/MCP_GUIDE.md` entry)
 
 ### → deprecated
@@ -187,7 +187,7 @@ jobs:
 4. **Implementar** + use case real (`alpha`)
 5. **Escrever golden cases** + CI green (`beta`)
 6. **Observability + 2 semanas** (`rc`)
-7. **Threat model + Enio approval** (`production`)
+7. **Threat model + maintainer approval** (`production`)
 8. **(Se aplicável)** promover a MCP
 
 ### Quando algo NÃO virar capability

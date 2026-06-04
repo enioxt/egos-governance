@@ -243,8 +243,8 @@ Protocolo council:
 ### 7.3 Hierarquia de autoridade
 
 ```
-decisão irreversível → council (3+) → Enio aprova
-decisão estrutural → Banda Cognitiva (4 papéis) → síntese Maestro → Enio aprova
+decisão irreversível → council (3+) → o mantenedor aprova
+decisão estrutural → Banda Cognitiva (4 papéis) → síntese Maestro → o mantenedor aprova
 decisão operacional → 1 modelo (especialização) → direto
 decisão trivial → qualquer modelo → direto
 ```
@@ -265,7 +265,7 @@ Cada camada tem propósito e limite:
 | **L6** | Langfuse + Grafana | Telemetria de regras | Dashboard |
 | **L7** | OpenRouter multi-model | Council cross-validation | Só decisões irreversíveis |
 
-**Regra de escrita:** cada decisão importante vai para L2 (memória pessoal do Enio) **e** eventualmente para L5 (regra distribuível).
+**Regra de escrita:** cada decisão importante vai para L2 (memória pessoal do mantenedor) **e** eventualmente para L5 (regra distribuível).
 
 ### 8.1 Auto-alimentação via commits
 
@@ -351,7 +351,7 @@ Formato:
 
 ## 10. Personal Chronicle — eventos marcados
 
-Eventos significativos da vida do Enio não vão para `kb_pages` simples. Vão para uma camada de chronicle com schema rico (a ser implementado — ver track `OPUS-CHRONICLE-*`).
+Eventos significativos da vida do mantenedor não vão para `kb_pages` simples. Vão para uma camada de chronicle com schema rico (a ser implementado — ver track `OPUS-CHRONICLE-*`).
 
 **Exemplo de evento:** "ideianaroça" — primeiro uso legal de cannabis (receita médica, Instituto Damascendo/CE), noite no sítio dos pais, José Angelo participou, 2026-xx-xx.
 
@@ -384,7 +384,7 @@ Ativação:
 
 Comportamento em modo tutor máximo:
 1. Não assume conhecimento — pergunta o nível do usuário antes de explicar
-2. Usa analogias do mundo do Enio (programação, governança, direito)
+2. Usa analogias do mundo do mantenedor (programação, governança, direito)
 3. Quebra em passos pequenos verificáveis
 4. Pausa para perguntar se está claro antes de avançar
 5. Ao final, sugere 1-3 próximos passos para aprofundar

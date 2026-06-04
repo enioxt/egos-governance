@@ -62,7 +62,7 @@ council_request:
   opcoes_identificadas: [<opção A>, <opção B>, ...]  # se houver
   criterio_decisao: <o que uma boa resposta precisa ter>
   restricoes: [<budget, tempo, legal, ética>]
-  solicitante: <Enio | agente-interno>
+  solicitante: <o mantenedor | agente-interno>
   gate: <quem aprova decisão final>
 ```
 
@@ -110,7 +110,7 @@ sintese_council:
 
 ### Fase 4 — Gate humano
 
-Council **nunca decide sozinho**. Output final sempre vai para o usuário (Enio) com:
+Council **nunca decide sozinho**. Output final sempre vai para o usuário (o mantenedor) com:
 - Síntese (1-2 parágrafos)
 - Tabela de concordância/discordância
 - Ação recomendada
@@ -198,14 +198,14 @@ Endpoint `/enio/council` exibe:
 
 ### Gate de execução
 
-Council que resulta em "executar ação" gera task em TASKS.md com ID `COUNCIL-<slug>-<N>` até o Enio aprovar.
+Council que resulta em "executar ação" gera task em TASKS.md com ID `COUNCIL-<slug>-<N>` até o mantenedor aprovar.
 
 ## Falha e fallback
 
 Se um modelo não responder em 90s:
 1. Retry uma vez
 2. Se falhar de novo: substitui pelo Tier 3 fallback
-3. Se 2+ modelos falharem: notifica Enio, pausa council, não decide
+3. Se 2+ modelos falharem: notifica o mantenedor, pausa council, não decide
 
 Nunca "decide com menos modelos" silenciosamente — se o protocolo não executou completo, o usuário precisa saber.
 

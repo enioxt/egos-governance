@@ -11,6 +11,10 @@ Battle-tested patterns, pre-commit pipeline, and meta-cognitive skills for teams
 
 > **Maturity:** governance docs (patterns · incidents · standards) are **Beta** — battle-tested, stable enough to adopt. The `packages/` (MCP servers) remain **Alpha** — see [Status](#status).
 
+> 🤖 **Are you an AI agent reading this?** Start at **[docs/FOR_AI_AGENTS.md](docs/FOR_AI_AGENTS.md)** — the EGOS framework is built to be read, activated and adapted by AI agents (not copied blindly).
+
+> **This repo is a curated, public view of the EGOS framework** — its architecture, governed-agent model, capabilities and metaprompts. It is curation + improvement, not a dump of the private monorepo. Sensitive/operational components are intentionally excluded.
+
 ---
 
 ## Why This Exists
@@ -47,10 +51,15 @@ Critical decisions (architecture, security, pricing) require review from 3+ inde
 ```
 egos-governance/
 ├── docs/
-│   ├── patterns/     ← Reusable governance patterns
-│   ├── practices/    ← Operating modes (Opus Mode, Banda Cognitiva, Council)
-│   ├── standards/    ← Quality frameworks (MCP rubric, Engineering 2026)
-│   └── incidents/    ← ⭐ Real post-mortems → rules (the flagship)
+│   ├── FOR_AI_AGENTS.md  ← 🤖 start here if you are an AI agent
+│   ├── architecture/  ← Axis model (EGOS at center) · ecosystem map · event chain
+│   ├── agents/        ← 12 governed roles · orchestration · agent template
+│   ├── capabilities/  ← Capability catalog by maturity (evidence-first)
+│   ├── metaprompts/   ← Curated metaprompts + the generator concept
+│   ├── patterns/      ← Reusable governance patterns
+│   ├── practices/     ← Operating modes (Opus Mode, Banda Cognitiva, Council)
+│   ├── standards/     ← Quality frameworks (MCP rubric, Engineering 2026)
+│   └── incidents/     ← ⭐ Real post-mortems → rules (the flagship)
 ├── starter/          ← Clone this to bootstrap your own governed repo
 │   ├── .husky/       ← 10 pre-commit gates
 │   ├── scripts/      ← Governance automation

@@ -6,7 +6,7 @@
 
 ## 1. O que é
 
-Decisões críticas do EGOS passam por **quórum obrigatório de 3+ LLMs independentes** antes de execução. O Claude Code (orquestrador) prepara o meta-prompt + arquivos, Enio coleta as avaliações manualmente, e o orquestrador consolida e executa.
+Decisões críticas do EGOS passam por **quórum obrigatório de 3+ LLMs independentes** antes de execução. O Claude Code (orquestrador) prepara o meta-prompt + arquivos, o mantenedor coleta as avaliações manualmente, e o orquestrador consolida e executa.
 
 **Nome interno:** "Quórum" (não "congresso" — evitar tom pomposo, manter técnico).
 
@@ -16,12 +16,12 @@ Decisões críticas do EGOS passam por **quórum obrigatório de 3+ LLMs indepen
 
 | Trigger | Exemplos concretos | Quórum mínimo |
 |---|---|---|
-| **Mudança no CLAUDE.md global** (qualquer seção A/Core) | Adicionar/remover/reescrever §1-§33 | 3 LLMs + Enio |
-| **Mudança arquitetural do kernel** | Trocar runtime (Bun→Node), trocar DB (Supabase→outro), mudar model routing chain | 3 LLMs + Enio |
-| **Novo produto/vertical público** | Lançar EGOS Lab, novo pricing Guard Brasil, novo repo público | 2 LLMs + Enio |
-| **Decisão de cortar/arquivar repo ou sistema** | Arquivar egos-lab, matar agents, deprecar package | 2 LLMs + Enio |
-| **Publicação pública de artigo âncora** | Showcase EGOS, manifesto técnico, post que vai virar referência | 3 LLMs + Enio |
-| **Mudança no Evidence Gate ou Doc-Drift Shield** | Alterar o que bloqueia commits | 2 LLMs + Enio |
+| **Mudança no CLAUDE.md global** (qualquer seção A/Core) | Adicionar/remover/reescrever §1-§33 | 3 LLMs + o mantenedor |
+| **Mudança arquitetural do kernel** | Trocar runtime (Bun→Node), trocar DB (Supabase→outro), mudar model routing chain | 3 LLMs + o mantenedor |
+| **Novo produto/vertical público** | Lançar EGOS Lab, novo pricing Guard Brasil, novo repo público | 2 LLMs + o mantenedor |
+| **Decisão de cortar/arquivar repo ou sistema** | Arquivar egos-lab, matar agents, deprecar package | 2 LLMs + o mantenedor |
+| **Publicação pública de artigo âncora** | Showcase EGOS, manifesto técnico, post que vai virar referência | 3 LLMs + o mantenedor |
+| **Mudança no Evidence Gate ou Doc-Drift Shield** | Alterar o que bloqueia commits | 2 LLMs + o mantenedor |
 
 ### Quando NÃO precisa de quórum
 - Commits normais de código
@@ -37,15 +37,15 @@ Decisões críticas do EGOS passam por **quórum obrigatório de 3+ LLMs indepen
 ### 3.1 Orquestrador prepara (Claude Code)
 
 1. Identifica que a decisão requer quórum (checklist do §2 acima)
-2. Avisa Enio: "Esta decisão requer Quórum. Preparando meta-prompt."
+2. Avisa o mantenedor: "Esta decisão requer Quórum. Preparando meta-prompt."
 3. Gera:
    - `meta-prompt.md` — instruções para os LLMs avaliadores (sem contexto prévio, auto-contido)
    - `artifact.md` — o arquivo/decisão sendo avaliado (cópia limpa)
    - `context.md` (opcional) — contexto adicional se necessário
 4. Salva em `docs/quorum/YYYY-MM-DD-<topic>/` para histórico
-5. Entrega a Enio com instruções de onde colar
+5. Entrega ao mantenedor com instruções de onde colar
 
-### 3.2 Enio coleta (manual)
+### 3.2 o mantenedor coleta (manual)
 
 1. Cola meta-prompt + artifact em cada LLM (Gemini, Grok, GPT, Perplexity — mínimo 3)
 2. Coleta respostas em texto
@@ -58,7 +58,7 @@ Decisões críticas do EGOS passam por **quórum obrigatório de 3+ LLMs indepen
    - **Tabela de consenso** (onde 3+ concordam)
    - **Tabela de divergência** (onde discordam + minha posição)
    - **Plano de ação** consolidado
-3. Enio aprova ou pede ajustes
+3. o mantenedor aprova ou pede ajustes
 4. Executa
 
 ### 3.4 Registro

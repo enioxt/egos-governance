@@ -64,7 +64,7 @@ critico:
 - Como isso fortalece estruturalmente o ecossistema?
 - Como vira regra, ferramenta ou fluxo reusável?
 - Que efeito de rede isso pode criar?
-- Que habilidade nova o Enio/sistema ganha?
+- Que habilidade nova o mantenedor/sistema ganha?
 
 **Output:**
 ```yaml
@@ -181,7 +181,7 @@ Toda execução da Banda salva em:
 - `docs/banda/YYYY-MM-DD-<slug>.yaml`
 - Row em `kb_pages` category `meta/banda` tenant=`enio`
 
-Isso permite análise futura: "em quais decisões a Banda discordou do Enio? Onde ela estava certa?"
+Isso permite análise futura: "em quais decisões a Banda discordou do mantenedor? Onde ela estava certa?"
 
 ---
 

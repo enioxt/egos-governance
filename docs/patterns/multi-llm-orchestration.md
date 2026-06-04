@@ -87,7 +87,7 @@ unset EGOS_CODEX_REVIEW       # desativa
 ### `/end` — Phase 13 (Adversarial Pre-Push Gate)
 - Dispara SE: commits da sessão ≥ 3 OU diff toca paths críticos
 - Usa gpt-5.5 para adversarial review
-- **Nunca bloqueia push** — informa, Enio decide
+- **Nunca bloqueia push** — informa, o mantenedor decide
 - Pulado automaticamente se quota 🔴
 
 ---
@@ -116,7 +116,7 @@ Fluxo de dados: `Claude Code → Codex CLI local → Codex app server → result
 
 | Anti-pattern | Motivo |
 |---|---|
-| Auto-aplicar fixes do Codex sem Enio aprovar | Viola Understanding Protocol §3 — remove entendimento |
+| Auto-aplicar fixes do Codex sem o mantenedor aprovar | Viola Understanding Protocol §3 — remove entendimento |
 | Codex blocking no pre-commit | Frozen zone + UX ruim + drena quota |
 | gpt-5.5 como default | Quota Plus $20 drena em 1-2 sessões |
 | Subagents Claude rodando Codex em loop | INC-006 phantom + custo multiplicativo |

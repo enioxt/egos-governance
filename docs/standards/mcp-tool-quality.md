@@ -272,7 +272,7 @@ O **agente** (Cascade) lê esses triggers e decide se executa.
 ## 🔄 Manutenção
 
 - **Revisão:** Trimestral
-- **Responsável:** Cascade + Enio
+- **Responsável:** Cascade + o mantenedor
 - **Localização:** `.guarani/standards/`
 
 ---

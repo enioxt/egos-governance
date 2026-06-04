@@ -9,14 +9,14 @@
 
 > *"You can outsource your thinking. YOU CANNOT OUTSOURCE YOUR UNDERSTANDING."* — Karpathy
 
-**Regra-mãe:** A IA pode pensar com Enio, mas nunca pode entender por ele.
+**Regra-mãe:** A IA pode pensar com o mantenedor, mas nunca pode entender por ele.
 
 **SSOT canonical:** `egos/docs/personal-os/UNDERSTANDING_PROTOCOL.md`
 **Mapa de delegação:** `egos/docs/personal-os/ENIO_UNDERSTANDING_MAP.md`
 **Gates automáticos:** `egos/docs/personal-os/FOCUS_GATES.md`
 
 **5 regras constitucionais.** Toda mudança gerada deve satisfazer ≥1:
-1. Aumentar entendimento de Enio sobre o sistema
+1. Aumentar entendimento do mantenedor sobre o sistema
 2. Aumentar capacidade de execução (sem aumentar dependência)
 3. Proteger foco (bloquear dispersão)
 4. Reduzir complexidade desnecessária
