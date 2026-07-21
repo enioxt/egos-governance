@@ -117,6 +117,20 @@ EGOS é um framework aberto de **governança para IA** — método, metaprompts 
 
 ---
 
+## The 5 Pillars *(Os 5 Pilares)*
+
+The rule runs, the proof opens, you decide. In EGOS, a rule becomes executable code — the gates in this kit are that principle made real.
+
+1. **Every number has a source** (*Verdade Provada*) — a claim without proof is invalid; classification as CONFIRMED/INFERRED/HYPOTHESIS.
+2. **The AI drafts, you decide** (*Humano Soberano*) — publishing, signing, deciding is a human act; the decision is logged with a criterion and a hash.
+3. **The rule runs, it doesn't stay on paper** (*Regra Vira Gate*) — a rule without executable enforcement is a manifesto; every rule in this kit has a gate.
+4. **What's yours stays yours** (*Dado Soberano*) — the engine travels in git; the real data never does. The PII/secret gates exist because of this.
+5. **If it's not ready yet, the screen says so** (*Entender antes de Produzir*) — honest state: PROVEN/PARTIAL/CLAIMED declared, never implied.
+
+Canonical source: EGOS framework — https://egos.ia.br/#/transparencia
+
+---
+
 ## Why This Exists
 
 Every rule in this repository was forged by a real incident.
