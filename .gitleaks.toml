@@ -1,4 +1,12 @@
 # .gitleaks.toml — EGOS-PUBLIC custom rules
+#
+# Identity-specific detection (client names, institutional/police vocabulary,
+# phone numbers, VPS IPs, internal domains) is intentionally NOT defined here:
+# a public rules file that names those terms would itself reveal exactly what is
+# being hidden (COI-SCAN-GATE-001). That detection runs PRE-PUBLICATION in the
+# private kernel — see scripts/extract-public.ts, which loads the private denylist
+# from KERNEL_ROOT/.coi-denylist.json (gitignored, never pushed). gitleaks' own
+# default ruleset (AWS/GitHub/etc.) still runs on top of the generic rule below.
 title = "EGOS Public — Secret Detection Rules"
 
 [[rules]]
@@ -7,44 +15,8 @@ description = "Supabase JWT token"
 regex = '''eyJhbGc[A-Za-z0-9._-]{50,}'''
 tags = ["jwt", "supabase"]
 
-[[rules]]
-id = "egos-client-names"
-description = "Client-specific names that must not appear in public repo"
-regex = '''(?i)(gpecas|apecaspatense|g\speak\s|apeças\spatense)'''
-tags = ["client-data", "pii"]
-
-[[rules]]
-id = "egos-personal-names"
-description = "Personal names of real clients"
-regex = '''(?i)\bjulio\b|\bjúlio\b|\bbernardo\b'''
-tags = ["pii", "client-data"]
-
-[[rules]]
-id = "egos-institutional"
-description = "Institutional identifiers (police/government)"
-regex = '''(?i)\bpcmg\b|\bdhpp\b|\bpolicía\s+civil\b'''
-tags = ["institutional", "sensitive"]
-
-[[rules]]
-id = "egos-phone-br"
-description = "Brazilian phone numbers with country code"
-regex = '''\b5534\d{8,9}\b'''
-tags = ["pii", "phone"]
-
-[[rules]]
-id = "egos-vps-ips"
-description = "VPS IP addresses (Hetzner/Contabo)"
-regex = '''204\.168\.217\.\d+|217\.216\.95\.\d+'''
-tags = ["infrastructure", "ip"]
-
-[[rules]]
-id = "egos-internal-domains"
-description = "Internal production domains"
-regex = '''egos\.ia\.br|intelink\.ia\.br|gpecas\.egos\.ia\.br|guard\.egos\.ia\.br'''
-tags = ["infrastructure", "domain"]
-
 [allowlist]
-description = "Files that may contain these patterns for legitimate reasons"
+description = "Files that may contain detection patterns for legitimate reasons"
 paths = [
   ".gitleaks.toml",
   "scripts/extract-public.ts",

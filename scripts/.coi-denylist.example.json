@@ -1,0 +1,11 @@
+{
+  "_comment": "COI-SCAN-GATE-001 — modelo da denylist de redação de identidade. Copie para /home/enio/egos/.coi-denylist.json (no KERNEL privado, gitignored) e preencha com SEUS padrões reais (nomes de clientes, domínios internos, telefone, e-mail, IPs, vocabulário institucional). NUNCA comite o arquivo real: uma denylist pública revela justamente o que você esconde. Cada item é uma regex JS (flags 'gi' aplicadas no load).",
+  "patterns": [
+    "\\bnome-cliente-um\\b|\\bnome-cliente-dois\\b",
+    "\\bcodinome-projeto-interno\\b|\\bsigla-institucional\\b",
+    "\\b55DDNNNNNNNNN\\b",
+    "seu-email@exemplo\\.com",
+    "10\\.0\\.0\\.\\d+|192\\.168\\.\\d+\\.\\d+",
+    "seudominio\\.com|painel\\.seudominio\\.com"
+  ]
+}

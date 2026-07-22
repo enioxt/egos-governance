@@ -73,7 +73,7 @@ The following operational components exist but are not documented publicly. They
 - **VPS infrastructure** — production host, reverse proxy, container orchestration. No IP addresses, credentials, port mappings, or container names are disclosed.
 - **EGOS Gateway** — internal messaging orchestrator connecting WhatsApp, Telegram, and the Master API. Deployed; configuration is private.
 - **EGOS HQ** — internal dashboard.
-- **Storefront / Central EGOS** — multi-tenant commerce layer (G Peças, APeças Patense). Partially deployed; de-prioritized.
+- **Storefront / Central EGOS** — multi-tenant commerce layer (client storefronts). Partially deployed; de-prioritized.
 - **852.egos.ia.br** — production deployment of the 852 chatbot. Operational details private.
 - **Supabase instance** — multi-tenant cloud database. Schema and project details are private.
 

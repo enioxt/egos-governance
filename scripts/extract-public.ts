@@ -173,28 +173,39 @@ function applyTransforms(content: string, transforms: Transform[]): string {
 
 // ── Security scan ─────────────────────────────────────────────────────────
 
-const CUSTOM_PATTERNS = [
-  // Client names
-  /gpecas|apecaspatense|g\speças|apeças\spatense/gi,
-  // Personal names related to clients
-  /\bjulio\b|\bjúlio\b|\bbernardo\b/gi,
-  // Police/institutional
-  /\bpcmg\b|\bdhpp\b|\bintelink\b/gi,
-  // Phone numbers (BR)
-  /\b5534\d{8,9}\b/g,
-  // Email
-  /enioxt@[a-zA-Z0-9.]+/g,
-  // VPS IPs
-  /204\.168\.217\.\d+|217\.216\.95\.\d+/g,
-  // Internal domains
-  /egos\.ia\.br|intelink\.ia\.br|gpecas\.egos\.ia\.br|guard\.egos\.ia\.br/gi,
+// Universal secret patterns — safe to keep public (não revelam identidade).
+const GENERIC_SECRET_PATTERNS: RegExp[] = [
   // JWT tokens
   /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,
-  // Common secret patterns
+  // Common secret prefixes
   /sk-[a-zA-Z0-9]{20,}/g,
   /ghp_[A-Za-z0-9]{20,}/g,
   /AKIA[A-Z0-9]{16}/g,
 ];
+
+// Identity-specific redaction patterns (client names, internal domains, personal
+// identifiers, institutional vocab) live in a PRIVATE, gitignored file in the
+// kernel — a public denylist would itself reveal what is being hidden
+// (COI-SCAN-GATE-001). See scripts/.coi-denylist.example.json for the shape.
+function loadPrivateDenylist(): RegExp[] {
+  const denylistPath = resolve(KERNEL_ROOT, ".coi-denylist.json");
+  if (!existsSync(denylistPath)) {
+    console.warn(
+      "\u26a0\ufe0f  .coi-denylist.json ausente no kernel \u2014 scan roda s\u00f3 com padr\u00f5es gen\u00e9ricos.\n" +
+      "   Crie /home/enio/egos/.coi-denylist.json (ver scripts/.coi-denylist.example.json)."
+    );
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(denylistPath, "utf-8")) as { patterns?: string[] };
+    return (parsed.patterns ?? []).map((pat) => new RegExp(pat, "gi"));
+  } catch (e) {
+    console.warn(`\u26a0\ufe0f  .coi-denylist.json inv\u00e1lido (${(e as Error).message}) \u2014 ignorado.`);
+    return [];
+  }
+}
+
+const CUSTOM_PATTERNS: RegExp[] = [...loadPrivateDenylist(), ...GENERIC_SECRET_PATTERNS];
 
 function customSecurityScan(repoPath: string): { violations: string[]; clean: boolean } {
   const violations: string[] = [];

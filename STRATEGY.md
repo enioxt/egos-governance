@@ -40,9 +40,9 @@ We are honest about success metrics. If this doesn't get traction, we will archi
 ## Not in Scope (What This Isn't)
 
 - EPOS (personal interview system — private to EGOS kernel)
-- Intelink (police intelligence tool — sensitive)
+- A private institutional tool (regulated sector — sensitive, not public)
 - Central EGOS (multi-tenant SaaS platform — commercial)
-- G Peças / client-specific code
+- Client-specific code (any client engagement)
 - Any personally identifiable data
 
 ---

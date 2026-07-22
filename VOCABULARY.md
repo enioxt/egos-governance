@@ -20,7 +20,7 @@ This glossary maps them to generic equivalents so the content is accessible to e
 | **HARVEST.md** | Learning Log | Appended by post-commit hooks: captures `LEARNING: <insight>` from commit bodies into persistent log. |
 | **Karpathy Doctrine** | Simplicity-First Principles | Five rules inspired by Andrej Karpathy: state assumptions first, minimum code, touch only what you must, define success verifiably, fail visibly. |
 | **Premortem** | Pre-failure Analysis | Before executing a decision, assume it already failed 6 months later and work backwards to identify why. |
-| **Dual Pursuit** | Two-Track Strategy | Running two independent value tracks simultaneously (e.g., Intelink institutional + Central EGOS commercial). |
+| **Dual Pursuit** | Two-Track Strategy | Running two independent value tracks simultaneously (e.g., an institutional track + Central EGOS commercial). |
 | **Evidence-First** | Proof-Required | No claim in durable docs without automated test, metric, manifest entry, or reproducible dry-run. |
 
 ---
