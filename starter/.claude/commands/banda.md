@@ -40,7 +40,7 @@ bun scripts/banda.ts \
 
 ## Cuidado adicional: Red Zone
 
-Decisões em Red Zone (copy pública, pricing, arquitetura irreversível, deploy produção com tráfego real, contexto policial/segurança) devem passar por `/premortem` **antes** de `/banda`:
+Decisões em Red Zone (copy pública, pricing, arquitetura irreversível, deploy produção com tráfego real, segurança/setores regulados) devem passar por `/premortem` **antes** de `/banda`:
 
 ```
 1. /premortem → identifica modos de falha + mitigações

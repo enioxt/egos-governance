@@ -26,7 +26,7 @@ Se artefato aumenta complexidade SEM aumentar entendimento → rejeitar, simplif
 
 **Trigger histórico:** INC-2026-05-08 (landing page declared "✅ 10/10" based on HTTP 200, without the engineer having seen the page render in a browser).
 
-**Domínios Red Zone (NUNCA terceirizar):** ética/Guard Brasil, promessa pública (copy), pricing, arquitetura final, segurança, contexto policial, claims médicos/jurídicos. Mapa completo em `ENIO_UNDERSTANDING_MAP.md` §🔴.
+**Domínios Red Zone (NUNCA terceirizar):** ética/Guard Brasil, promessa pública (copy), pricing, arquitetura final, segurança, setores regulados, claims médicos/jurídicos. Mapa completo em `ENIO_UNDERSTANDING_MAP.md` §🔴.
 
 **Visual Proof Gate:** deploy de UI exige screenshot real. HTTP 200 ≠ prova de função.
 

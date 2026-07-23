@@ -12,7 +12,7 @@ description: Premortem — antecipa modos de falha antes de executar decisão/re
 - Antes de refactor não-trivial (toca 3+ arquivos)
 - Antes de deploy em produção com tráfego real
 - Antes de decisão arquitetural irreversível (DB schema, auth, billing)
-- Antes de Red Zone (copy pública, pricing, contexto policial/segurança)
+- Antes de Red Zone (copy pública, pricing, segurança/setores regulados)
 - Quando usuário pede "antes de mexer nisso, faz um premortem" ou variações
 
 ## Estrutura obrigatória (não pular passo)

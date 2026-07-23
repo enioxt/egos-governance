@@ -180,7 +180,7 @@ Intended future direction; no significant code exists yet.
 
 - Credentials, IPs, VPS addresses, internal paths.
 - Valuation estimates or financial projections (no public claims without legal review).
-- Content from active institutional investigations or police operations (restricted by nature).
+- Content from active institutional investigations or restricted operations (restricted by nature).
 - $ETHIK token (live on-chain, dormant by decision — legal review required before any public reference).
 - Any personally identifiable information or case data.
 
