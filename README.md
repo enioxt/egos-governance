@@ -141,7 +141,7 @@ This is not theoretical best-practices. It's **operational scar tissue** — and
 
 ---
 
-## 5 Things You Won't Find Elsewhere
+## 5 Governance Patterns Forged From Real Incidents
 
 ### 1. Documentation Drift Shield
 4-layer enforcement that prevents your README from lying about your code: contract manifest (YAML), pre-commit hook (blocking), daily VPS sentinel cron, weekly LLM analysis pass.
@@ -156,7 +156,7 @@ Race condition prevention for parallel agent workloads. Solved after a productio
 Critical decisions (architecture, security, pricing) require review from 3+ independent LLMs before execution. Not because any one model is wrong — because they're wrong in different ways.
 
 ### 5. Incident-Driven Governance
-`docs/incidents/` contains anonymized post-mortems of real production failures, each with the rule it created. LangChain won't publish their post-mortems. We will.
+`docs/incidents/` contains anonymized post-mortems of real production failures, each with the rule it created. We publish ours.
 
 ---
 
